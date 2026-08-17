@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Notebook No. 1 — One Week of Lesson Planning, Before &amp; After</title>
+<meta name="description" content="A worked example: rebuilding a week of Class 8 science lesson planning with Gemini and NotebookLM — with live, interactive diagrams and an honest grading of where AI breaks. By Moksh Bainsla.">
+<meta name="author" content="Moksh Bainsla">
+<meta name="theme-color" content="#f4efe1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="One week of lesson planning, before and after">
+<meta property="og:description" content="What actually changes when a teacher plans with Gemini and NotebookLM — six live diagrams, and three honest verdicts on where it breaks. A field notebook by Moksh Bainsla.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Kalam:wght@400;700&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f4efe1;--paper2:#efe8d6;--ink:#2b2a26;--ink2:#514e46;
+--red:#c1432e;--blue:#2f5fa8;--green:#3f7d4e;--amber:#c98a1f;--purple:#7a5aa8;
+--pencil:#6b675c;--line:#d8cfb8;--grid:#e3dcc6;
+--hand:'Patrick Hand','Gaegu','Comic Sans MS',cursive;--hand2:'Kalam','Patrick Hand',cursive;}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:var(--hand);font-size:18px;line-height:1.55;
+background-color:var(--paper);
+background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+background-size:26px 26px;}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 120px}
+
+/* header */
+.tape{display:inline-block;background:rgba(201,138,31,.30);border:1px dashed rgba(43,42,38,.35);
+padding:4px 20px;transform:rotate(-2.2deg);font-family:var(--hand2);font-size:14px;letter-spacing:.06em;margin:26px 0 10px}
+h1{font-size:44px;line-height:1.08;margin:6px 0 8px;letter-spacing:-.01em}
+h1 u{text-decoration:none;border-bottom:4px solid var(--red);padding-bottom:2px}
+.byline{font-family:var(--hand2);color:var(--ink2);font-size:17px;margin:0 0 6px}
+.stamp{display:inline-block;border:2.5px solid var(--red);color:var(--red);font-family:var(--hand2);
+font-size:13px;letter-spacing:.1em;padding:5px 12px;border-radius:6px;transform:rotate(-3deg);margin-top:8px}
+
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(244,239,225,.94);border-bottom:2px dashed var(--ink);
+padding:9px 0;margin:22px 0 0;backdrop-filter:blur(3px)}
+nav .navin{max-width:1040px;margin:0 auto;padding:0 20px;display:flex;gap:7px;flex-wrap:wrap}
+nav a{font-family:var(--hand2);font-size:14px;color:var(--ink2);text-decoration:none;border:1.5px solid transparent;
+padding:3px 9px;border-radius:8px}
+nav a:hover{border-color:var(--ink);background:var(--paper2)}
+
+/* sections */
+section{margin:46px 0 0;scroll-margin-top:104px}
+.sn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;
+background:var(--ink);color:var(--paper);font-family:var(--hand);font-size:21px;transform:rotate(-7deg);margin-right:12px;vertical-align:middle}
+h2{display:inline;font-size:30px;letter-spacing:-.01em}
+.sd{font-family:var(--hand2);color:var(--pencil);font-size:16px;margin:8px 0 0;font-style:italic}
+
+.sketch{position:relative;background:var(--paper2);border:2.5px solid var(--ink);
+border-radius:14px 12px 15px 11px;padding:20px;margin:22px 0;box-shadow:4px 5px 0 rgba(43,42,38,.14)}
+.sketch::after{content:"";position:absolute;inset:5px;border:1.5px solid rgba(43,42,38,.13);
+border-radius:10px 12px 9px 13px;pointer-events:none}
+canvas{display:block;width:100%;border-radius:8px;background:#fbf8ef;touch-action:none}
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0 6px}
+.btn{font-family:var(--hand);font-size:16px;background:var(--paper);border:2.5px solid var(--ink);
+padding:5px 14px;border-radius:11px 9px 12px 8px;cursor:pointer;box-shadow:2px 2px 0 var(--pencil);color:var(--ink)}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--pencil)}
+.btn.on{background:var(--amber);color:#fff}
+.btn.on.red{background:var(--red)} .btn.on.blue{background:var(--blue)} .btn.on.green{background:var(--green)}
+input[type=range]{width:250px;accent-color:var(--red)}
+.rlab{font-family:var(--hand2);font-size:14px;color:var(--pencil)}
+.readout{font-family:var(--hand);text-align:center;font-size:19px;margin:8px 0 0}
+.readout b{color:var(--red)}
+.cap{font-family:var(--hand2);font-size:15px;color:var(--pencil);text-align:center;font-style:italic;margin:9px 0 0}
+
+.note{background:#fffdf5;border:2px solid var(--ink);border-radius:11px;padding:14px 16px;
+box-shadow:3px 3px 0 rgba(43,42,38,.12);transform:rotate(-.6deg)}
+.note:nth-child(even){transform:rotate(.7deg)}
+.note h4{margin:0 0 6px;font-size:19px}
+.note p{margin:0;font-family:var(--hand2);font-size:15.5px;color:var(--ink2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:20px 0}
+.callout{font-family:var(--hand2);border-left:5px solid var(--amber);background:rgba(201,138,31,.09);
+padding:12px 16px;border-radius:0 10px 10px 0;margin:20px 0;font-size:16.5px}
+.callout b{font-family:var(--hand)}
+
+/* verdict table */
+.verd{width:100%;border-collapse:collapse;margin:16px 0;font-size:16px}
+.verd th{font-family:var(--hand2);text-align:left;font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+color:var(--pencil);padding:8px 10px;border-bottom:2px solid var(--ink)}
+.verd td{padding:11px 10px;border-bottom:1.5px dashed var(--line);vertical-align:top}
+.v{font-family:var(--hand);font-size:14px;padding:3px 9px;border-radius:7px;border:2px solid;white-space:nowrap;display:inline-block}
+.v.h{color:var(--green);border-color:var(--green);background:rgba(63,125,78,.10)}
+.v.p{color:var(--amber);border-color:var(--amber);background:rgba(201,138,31,.12)}
+.v.b{color:var(--red);border-color:var(--red);background:rgba(193,67,46,.10)}
+.verd td small{font-family:var(--hand2);color:var(--ink2);font-size:14.5px;display:block;margin-top:3px}
+
+.qcard{background:#fffdf5;border:2px solid var(--ink);border-radius:10px;padding:14px 16px;margin:12px 0 0;
+font-family:var(--hand2);font-size:16px;min-height:96px}
+.qcard .qt{font-family:var(--hand);font-size:18px;color:var(--ink);margin-bottom:6px}
+.qcard .scaf{color:var(--blue)}
+footer{margin-top:60px;padding-top:22px;border-top:2px dashed var(--ink);font-family:var(--hand2);
+font-size:14.5px;color:var(--pencil)}
+footer a{color:var(--ink2)}
+@media(max-width:640px){h1{font-size:33px}h2{font-size:24px}body{font-size:17px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="tape">FIELD NOTEBOOK · No. 1 · AI &amp; TEACHING</div>
+  <h1>One week of lesson planning,<br><u>before and after</u></h1>
+  <p class="byline">What actually changes when a Class 8 science teacher plans with Gemini and NotebookLM — the three places it still goes wrong, and what building the teaching artefact itself looks like.</p>
+  <p class="byline" style="font-size:15px">Moksh Bainsla · every diagram below is live — drag, slide, toggle.</p>
+  <div class="stamp">WORKED EXAMPLE · NOT A TOOL DEMO</div>
+</div>
+
+<nav><div class="navin">
+  <a href="#s1">1 · The Sunday problem</a>
+  <a href="#s2">2 · Grounding</a>
+  <a href="#s3">3 · Outcomes first</a>
+  <a href="#s4">4 · Differentiation</a>
+  <a href="#s5">5 · Distractors</a>
+  <a href="#s5b">6 · Teaching visually</a>
+  <a href="#s6">7 · Verdicts</a>
+  <a href="#s7">8 · What stays human</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- 1 -->
+<section id="s1">
+  <span class="sn">1</span><h2>The Sunday evening problem</h2>
+  <p class="sd">Five lessons on Force and Pressure. One teacher. One evening.</p>
+  <p>Nobody becomes a teacher because they love writing worksheets. But a week of Class&nbsp;8 science — six subtopics from force through to atmospheric pressure — costs roughly three hours of Sunday evening before a single child has learnt anything.</p>
+  <p>Below is where that time actually goes. Press the button to see what changes once the planning is grounded and the drafting is delegated. <b>Note the bar that does not shrink — and the one that appears out of nowhere.</b></p>
+
+  <div class="sketch">
+    <canvas id="c1" height="345"></canvas>
+    <div class="ctrls">
+      <button class="btn on" id="b1a" data-mode="before">Before</button>
+      <button class="btn" id="b1b" data-mode="after">After</button>
+    </div>
+    <div class="readout" id="r1">Total: <b>185 min</b> · one Sunday evening</div>
+    <p class="cap">The bars that barely move are the ones that matter most.</p>
+  </div>
+
+  <div class="callout"><b>The point of this notebook.</b> The time saving is real but it is the least interesting part. What matters is that the hours freed up are the mechanical ones, and the hours that remain are the ones where a teacher's judgement is the whole job.</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <span class="sn">2</span><h2>Grounding is the whole trick</h2>
+  <p class="sd">The single difference between a useful draft and a confident, wrong one.</p>
+  <p>An ungrounded model answers from everything it has ever read. Ask it for a Class&nbsp;8 lesson on pressure and it will happily give you a good lesson — for the wrong syllabus, at the wrong depth, citing a textbook you don't use.</p>
+  <p>A grounded model — NotebookLM with your chapter, your syllabus, last year's question paper uploaded — answers from those pages and tells you when the answer isn't in them. Toggle the source below and watch where the answers come from.</p>
+
+  <div class="sketch">
+    <canvas id="c2" height="340"></canvas>
+    <div class="ctrls">
+      <button class="btn on red" id="b2a" data-g="0">Ungrounded</button>
+      <button class="btn" id="b2b" data-g="1">Grounded on your chapter</button>
+    </div>
+    <div class="readout" id="r2">On-syllabus: <b>—</b></div>
+    <p class="cap">Same question, same model. The only change is what it is allowed to read.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="note"><h4>What ungrounded gets wrong</h4><p>Depth drift. It reaches for fluid dynamics and Pascal's law derivations that sit three years above Class&nbsp;8, because most of the internet's writing on pressure is written for older students.</p></div>
+    <div class="note"><h4>What grounding fixes</h4><p>It answers inside your six subtopics — force, effects of force, contact and non-contact, pressure, pressure in liquids and gases, atmospheric pressure — and says "not in the material" when you stray outside them.</p></div>
+  </div>
+  <div class="callout"><b>Practical version:</b> upload the chapter, the syllabus extract and last year's paper to a notebook <i>once</i>, at the start of term. Everything for the next twelve weeks is drafted from that notebook. Ten minutes spent once removes the most common failure for the rest of the year.</div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <span class="sn">3</span><h2>Outcomes before activities</h2>
+  <p class="sd">The order you ask in decides the quality you get.</p>
+  <p>The most common mistake is asking for the lesson first. You get an engaging lesson about a topic, rather than a lesson that gets specific children to a specific place. Ask in the order below and each step constrains the next — which is exactly what stops the model drifting.</p>
+
+  <div class="sketch">
+    <canvas id="c3" height="300"></canvas>
+    <div class="ctrls">
+      <button class="btn" id="b3">Play the chain</button>
+    </div>
+    <div class="readout" id="r3">Step <b>0</b> of 5</div>
+    <p class="cap">Each box is a separate prompt. Never ask for all five at once.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <span class="sn">4</span><h2>Differentiation — the part worth the money</h2>
+  <p class="sd">One question, three children, three versions. Drag the slider.</p>
+  <p>Every teacher knows the three kids at the back are lost and the two at the front are bored. Almost nobody has time to write three versions of every worksheet. This is the single highest-value thing a grounded model does, and it takes about ninety seconds.</p>
+  <p>Below is one real question from the pressure subtopic, rewritten across five levels of support. Watch the <span style="color:var(--blue)">blue scaffolding</span> appear and disappear.</p>
+
+  <div class="sketch">
+    <canvas id="c4" height="270"></canvas>
+    <div class="ctrls">
+      <span class="rlab">more support</span>
+      <input type="range" id="s4r" min="1" max="5" value="3" step="1">
+      <span class="rlab">more stretch</span>
+    </div>
+    <div class="readout" id="r4">Tier <b>3</b> — grade level</div>
+    <div class="qcard" id="q4"></div>
+    <p class="cap">Same concept, same learning outcome, five entry points.</p>
+  </div>
+
+  <div class="callout"><b>What the teacher still does:</b> decides which child gets which tier. The model cannot know that Aarav was away for a fortnight, or that Priya only looks lost because she is bored. Producing the five versions is mechanical. Assigning them is teaching.</div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <span class="sn">5</span><h2>The distractor trap</h2>
+  <p class="sd">Where AI-written assessment quietly fails, and how to catch it in ten seconds.</p>
+  <p>Ask for a multiple-choice question and you will get four options: one right, three wrong. They will look fine. The problem is that a <i>good</i> wrong answer is not merely wrong — it is the specific mistake a real Class&nbsp;8 child makes, so that choosing it tells you what to reteach.</p>
+  <p>Click each option below to see which misconception it catches. Two of these are diagnostic. Two are filler.</p>
+
+  <div class="sketch">
+    <canvas id="c5" height="320"></canvas>
+    <div class="ctrls">
+      <button class="btn" data-opt="0">Option A</button>
+      <button class="btn" data-opt="1">Option B</button>
+      <button class="btn" data-opt="2">Option C</button>
+      <button class="btn" data-opt="3">Option D</button>
+    </div>
+    <div class="readout" id="r5">Click an option to test it</div>
+    <p class="cap">The question: "A woman in stiletto heels sinks into soft ground more than an elephant does. Why?"</p>
+  </div>
+
+  <div class="grid2">
+    <div class="note"><h4>The fix takes one line</h4><p>"Rewrite the three wrong options so each one matches a known Class&nbsp;8 misconception, and tell me which misconception each maps to." Now the quiz is a diagnostic instrument rather than a scoring device.</p></div>
+    <div class="note"><h4>Why a teacher must still check</h4><p>The four documented misconceptions here — force and pressure treated as interchangeable, area ignored, liquids and gases assumed identical, atmospheric pressure assumed constant with altitude — come from years of marking. A model will produce plausible distractors. It will not reliably produce <i>your</i> class's distractors.</p></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="s5b">
+  <span class="sn">6</span><h2>From plan to artefact</h2>
+  <p class="sd">A worked example of teaching visually — light as an electromagnetic wave.</p>
+  <p>Everything so far has been about planning faster. But a plan is not a lesson. What actually shifts understanding is often a picture the student can move themselves — and building that is a separate craft from writing the plan.</p>
+  <p>Here is the method applied to a topic that is genuinely hard to picture, and where the standard textbook diagram quietly creates the very misconception it is meant to remove.</p>
+
+  <div class="sketch">
+    <canvas id="c6" height="360"></canvas>
+    <div class="ctrls">
+      <span class="rlab">long &lambda;</span>
+      <input type="range" id="s6r" min="0" max="100" value="52" step="1">
+      <span class="rlab">short &lambda;</span>
+      <button class="btn on blue" id="b6b">Magnetic field: on</button>
+      <button class="btn" id="b6r">Show what students picture</button>
+    </div>
+    <div class="readout" id="r6">&lambda; = <b>—</b></div>
+    <p class="cap">Two fields, one wave, at right angles and in step. Drag the slider through the whole spectrum.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="note"><h4>Misconception 1 — "something is wiggling"</h4><p>The textbook picture looks like a rope. Students conclude that light is a displacement of <i>stuff</i>, and then cannot explain how sunlight crosses empty space. Press "show what students picture" and the difference becomes arguable rather than assertable.</p></div>
+    <div class="note"><h4>Misconception 2 — "two waves travelling together"</h4><p>Drawing E and B in different colours invites the idea that they are separate things that happen to be side by side. Turn the magnetic field off and on: the point is that neither can exist without the other — a changing electric field creates the magnetic one, and vice versa.</p></div>
+    <div class="note"><h4>Misconception 3 — "the amplitude is a height"</h4><p>The vertical axis is field strength in volts per metre, not distance in metres. Nothing is physically that tall. This is the one that survives all the way to university.</p></div>
+    <div class="note"><h4>What this picture is lying about</h4><p>The wavelength on screen barely changes while the number underneath changes by fifteen orders of magnitude. A gamma ray and an FM radio wave cannot share a diagram honestly. Say that out loud to the class — the admission teaches more than the diagram.</p></div>
+  </div>
+
+  <div class="callout"><b>The method, in four moves.</b> One — show it moving before you name anything, so curiosity arrives before vocabulary. Two — give one control, not five; a slider with a single meaning is a thought, a dashboard is a toy. Three — make the misconception visible and let them break it themselves, because a belief a student disproves stays disproved. Four — say what the picture is lying about, every time. Every model is wrong somewhere, and naming where is the difference between teaching physics and teaching a diagram.</div>
+
+  <div class="callout" style="border-left-color:var(--blue);background:rgba(47,95,168,.08)"><b>Why this is in a notebook about AI.</b> A model will draft the lesson plan for this topic in about forty seconds, and the draft will be reasonable. It will not build the thing above. Deciding that <i>this</i> concept needs a movable picture rather than another paragraph — and knowing which wrong belief to aim it at — is the judgement the plan is built around. That is the part worth training teachers in.</div>
+</section>
+
+<!-- 7 -->
+<section id="s6">
+  <span class="sn">7</span><h2>Verdicts</h2>
+  <p class="sd">Six honest claims about AI lesson planning, graded.</p>
+  <p>I grade things three ways: <span class="v h">HOLDS UP</span> <span class="v p">PART TRUE</span> <span class="v b">BREAKS</span>. Anything a workshop tells you that is all green is selling you something.</p>
+
+  <table class="verd">
+    <thead><tr><th style="width:130px">Verdict</th><th>Claim</th></tr></thead>
+    <tbody>
+    <tr><td><span class="v h">HOLDS UP</span></td><td>It drafts structure fast.<small>Lesson skeletons, hooks, rubrics, question banks and five differentiated variants of the same worksheet. This is genuine, repeatable time back — the largest single win available to a teacher today.</small></td></tr>
+    <tr><td><span class="v h">HOLDS UP</span></td><td>Grounding on your own material removes most factual risk.<small>Uploading the chapter and syllabus once at the start of term is the highest-leverage ten minutes in this whole workflow.</small></td></tr>
+    <tr><td><span class="v p">PART TRUE</span></td><td>It writes good assessments.<small>The stems are usually fine. The distractors are usually not diagnostic unless you explicitly ask for misconception-mapped options — and even then, verify against what your class actually gets wrong.</small></td></tr>
+    <tr><td><span class="v p">PART TRUE</span></td><td>It saves three hours a week.<small>It saved 119 minutes in the worked example above — just under two hours, and only after a new 14-minute cost appeared: checking and correcting what the model got wrong. The claim is directionally right and routinely overstated. Expect the first fortnight to save nothing at all while you learn the grounding step.</small></td></tr>
+    <tr><td><span class="v b">BREAKS</span></td><td>It knows your syllabus.<small>Ungrounded, it drifts to whichever curriculum dominates its training data and pitches two to three years above Class&nbsp;8. Confident, fluent, and wrong about depth — the hardest error for a busy teacher to spot.</small></td></tr>
+    <tr><td><span class="v b">BREAKS</span></td><td>It can decide what a particular child needs.<small>It cannot see the fortnight Aarav missed, the fight at lunch, or the fact that the class went flat last Tuesday. Every genuinely pedagogical judgement remains yours. This is not a limitation to be engineered away; it is the job.</small></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <span class="sn">8</span><h2>What stays human</h2>
+  <p class="sd">The one idea to keep.</p>
+  <p>The interesting question was never "can AI write a lesson plan". It obviously can. The question is which parts of teaching were always mechanical, and which only looked mechanical because they were tedious.</p>
+  <p>Formatting a worksheet three ways was always mechanical. Knowing which child gets which one never was. A workshop that teaches teachers the tools without teaching them that line ends the same way every time: enthusiasm for a week, then nothing changes.</p>
+
+  <div class="callout"><b>So the training I would build is not a tool tour.</b> It is one grounded notebook, one real week of that teacher's own planning, rebuilt live in the session — and an honest map of the three places it breaks, so nobody discovers those on a Monday morning in front of thirty children.</div>
+
+  <div class="grid2">
+    <div class="note"><h4>Automate the predictable</h4><p>Drafting, formatting, variants, first-pass rubrics, hooks, question banks.</p></div>
+    <div class="note"><h4>Never automate the trust</h4><p>Which child, which tier, what to cut, when to stop and re-teach, and who needs to be asked how they are before any of it matters.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Built for the Score Merit AI Trainer for Educators role</b>, August 2026 — a small worked example rather than a CV line. Every diagram is a live canvas; nothing here is a screenshot.</p>
+  <p>Worked example uses NCERT Class 8 Science, Force and Pressure (six subtopics, four documented misconceptions). Tooling references: Gemini in Google Classroom and NotebookLM features as published by Google for Education, 2026 — lesson-plan drafting, quiz generation to Google Forms, rubric generation, NotebookLM study guides and audio overviews, all free with Google Workspace for Education. Time figures are from one worked planning week and are illustrative, not a study.</p>
+  <p>Section 6 spectrum bands follow NASA's <i>Imagine the Universe</i> reference (visible light 400–700 nm). The three misconceptions listed there are the ones that recur whenever this topic is taught — they are not findings attributed to a named study. The wavelength drawn on screen is deliberately not to scale, which the section says out loud.</p>
+  <p>Moksh Bainsla · mokshbainsla12@gmail.com · Noida</p>
+</footer>
+</div>
+
+<script>
+const TAU=Math.PI*2, INK='#2b2a26',RED='#c1432e',BLUE='#2f5fa8',GREEN='#3f7d4e',AMBER='#c98a1f',PURPLE='#7a5aa8',PENCIL='#6b675c';
+function fit(cv){const dpr=Math.min(window.devicePixelRatio||1,2);const w=cv.clientWidth||cv.parentElement.clientWidth||900;
+ const h=parseInt(cv.getAttribute('height'))||300;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';
+ const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w,h};}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+const anims=[];function register(cv,step){const o={cv,step,vis:true};anims.push(o);return o;}
+const io=new IntersectionObserver(function(es){es.forEach(function(e){
+  for(var i=0;i<anims.length;i++){if(anims[i].cv===e.target)anims[i].vis=e.isIntersecting;}});},{threshold:.05});
+function raf(){for(var i=0;i<anims.length;i++){if(anims[i].vis)anims[i].step();}requestAnimationFrame(raf);}
+function F(s){return s+'px "Patrick Hand","Gaegu",cursive';}
+function hLine(ctx,x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.beginPath();
+ var seg=6,dx=(x2-x1)/seg,dy=(y2-y1)/seg;ctx.moveTo(x1,y1);
+ for(var i=1;i<=seg;i++){ctx.lineTo(x1+dx*i+(Math.random()-.5)*1.1,y1+dy*i+(Math.random()-.5)*1.1);}ctx.stroke();}
+function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;ctx.beginPath();
+ ctx.moveTo(x,y);ctx.lineTo(x+w,y+.6);ctx.lineTo(x+w-.5,y+h);ctx.lineTo(x-.4,y+h-.5);ctx.closePath();ctx.stroke();}
+
+/* ---------- 1 · time bars ---------- */
+(function(){
+ var cv=document.getElementById('c1');if(!cv)return;var G=fit(cv);
+ var tasks=[
+  {n:'Find a demo / video',b:25,a:5},
+  {n:'Write the worksheet',b:45,a:8},
+  {n:'Differentiate it (3 ways)',b:40,a:6},
+  {n:'Build the quiz',b:30,a:5},
+  {n:'Parent note + admin',b:20,a:3},
+  {n:'Check + fix what the AI got wrong',b:0,a:14,isNew:true},
+  {n:'Decide what this class needs',b:25,a:25}
+ ];
+ var mode='before',prog=tasks.map(function(){return 0;});
+ var r1=document.getElementById('r1');
+ function setMode(m){mode=m;
+  document.getElementById('b1a').classList.toggle('on',m==='before');
+  document.getElementById('b1b').classList.toggle('on',m==='after');
+  var tot=tasks.reduce(function(s,t){return s+(m==='before'?t.b:t.a);},0);
+  var before=tasks.reduce(function(s,t){return s+t.b;},0);
+  r1.innerHTML=m==='before'?'Total: <b>'+tot+' min</b> · one Sunday evening'
+    :'Total: <b>'+tot+' min</b> · saved '+(before-tot)+' min — but a new cost appeared, and the last bar never moves';}
+ document.getElementById('b1a').onclick=function(){setMode('before');};
+ document.getElementById('b1b').onclick=function(){setMode('after');};
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
+  var lx=Math.min(215,w*.42),bx=lx+10,maxw=w-bx-70,scale=maxw/50;
+  ctx.font=F(15);
+  for(var i=0;i<tasks.length;i++){
+   var t=tasks[i],y=28+i*40;
+   var target=(mode==='before'?t.b:t.a);
+   prog[i]+=(target-prog[i])*.12;
+   var same=(t.b===t.a);
+   ctx.fillStyle=INK;ctx.textAlign='right';ctx.fillText(t.n,lx,y+6);
+   ctx.fillStyle='rgba(43,42,38,.07)';ctx.fillRect(bx,y-11,Math.max(t.b,t.a)*scale,22);
+   ctx.fillStyle=t.isNew?AMBER:(same?PURPLE:(mode==='before'?RED:GREEN));
+   ctx.fillRect(bx,y-11,Math.max(prog[i]*scale,1),22);
+   ctx.strokeStyle=INK;ctx.lineWidth=1.6;ctx.strokeRect(bx,y-11,Math.max(prog[i]*scale,1),22);
+   ctx.textAlign='left';ctx.fillStyle=INK;ctx.font=F(14);
+   ctx.fillText(Math.round(prog[i])+'m',bx+Math.max(prog[i]*scale,1)+8,y+5);ctx.font=F(15);
+   ctx.textAlign='right';ctx.font=F(13);
+   if(same){ctx.fillStyle=PURPLE;ctx.fillText('unchanged',w-6,y-12);}
+   else if(t.isNew&&mode==='after'){ctx.fillStyle=AMBER;ctx.fillText('new cost',w-6,y-12);}
+   ctx.font=F(15);
+  }
+  hLine(ctx,bx,h-24,bx+maxw,h-24,PENCIL,1.5);
+  ctx.textAlign='center';ctx.fillStyle=PENCIL;ctx.font=F(13);
+  ctx.fillText('minutes',bx+maxw/2,h-8);
+ });
+ setMode('before');
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+/* ---------- 2 · grounding ---------- */
+(function(){
+ var cv=document.getElementById('c2');if(!cv)return;var G=fit(cv);
+ var grounded=0,t=0,parts=[],landed=[],acc=0;
+ var r2=document.getElementById('r2');
+ function set(g){grounded=g;
+  document.getElementById('b2a').classList.toggle('on',g===0);
+  document.getElementById('b2b').classList.toggle('on',g===1);
+  document.getElementById('b2a').classList.toggle('red',true);
+  parts=[];landed=[];
+  // pre-seed so the output box is never empty on first view
+  for(var q=0;q<18;q++){landed.push(g===1?(Math.random()<0.94):(Math.random()<0.55));}}
+ document.getElementById('b2a').onclick=function(){set(0);};
+ document.getElementById('b2b').onclick=function(){set(1);};
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);t+=1;
+  var srcX=w*0.20, dstX=w*0.80, midY=h*0.52;
+  // source
+  ctx.font=F(15);ctx.textAlign='center';
+  if(grounded===0){
+   ctx.strokeStyle=RED;ctx.lineWidth=2;
+   for(var k=0;k<9;k++){var a=k/9*TAU+t*0.004,rr=58+((k*13)%26);
+    ctx.beginPath();ctx.arc(srcX+Math.cos(a)*rr,midY+Math.sin(a)*rr*.62,7,0,TAU);ctx.stroke();}
+   ctx.fillStyle=RED;ctx.fillText('everything it ever read',srcX,midY+108);
+  }else{
+   sketchRect(ctx,srcX-52,midY-56,104,112,GREEN,2.4);
+   ctx.strokeStyle=GREEN;ctx.lineWidth=1.4;
+   for(var l=0;l<7;l++){hLine(ctx,srcX-36,midY-36+l*15,srcX+36,midY-36+l*15,'rgba(63,125,78,.55)',1.2);}
+   ctx.fillStyle=GREEN;ctx.fillText('your chapter + syllabus',srcX,midY+108);
+  }
+  // particles in flight (drawn under the boxes)
+  if(t%7===0)parts.push({p:0,ok:grounded===1?(Math.random()<0.94):(Math.random()<0.55)});
+  for(var i=parts.length-1;i>=0;i--){
+   var pt=parts[i];pt.p+=0.022;
+   if(pt.p>=1){landed.push(pt.ok);if(landed.length>44)landed.shift();parts.splice(i,1);continue;}
+   var px=srcX+(dstX-56-srcX)*pt.p;
+   var py=midY+Math.sin(pt.p*3.1+i)*14*(1-pt.p);
+   ctx.fillStyle=pt.ok?GREEN:RED;ctx.beginPath();ctx.arc(px,py,5,0,TAU);ctx.fill();
+  }
+  // model box, drawn over the flight path so the label stays readable
+  ctx.fillStyle='#fbf8ef';ctx.fillRect(w*0.44,midY-40,w*0.12,80);
+  sketchRect(ctx,w*0.44,midY-40,w*0.12,80,INK,2.4);
+  ctx.fillStyle=INK;ctx.font=F(15);ctx.textAlign='center';ctx.fillText('model',w*0.50,midY+5);
+  // destination — fills with whatever actually arrived
+  ctx.fillStyle='#fbf8ef';ctx.fillRect(dstX-56,midY-52,112,104);
+  sketchRect(ctx,dstX-56,midY-52,112,104,INK,2.4);
+  for(var d=0;d<landed.length;d++){
+   var col=d%6,row=Math.floor(d/6);
+   ctx.fillStyle=landed[d]?GREEN:RED;
+   ctx.beginPath();ctx.arc(dstX-44+col*17,midY-40+row*14,4.6,0,TAU);ctx.fill();
+  }
+  ctx.fillStyle=INK;ctx.font=F(15);ctx.textAlign='center';ctx.fillText('your lesson',dstX,midY+96);
+  ctx.font=F(14);ctx.fillStyle=grounded?GREEN:RED;
+  ctx.fillText(grounded?'on-syllabus':'depth drift',dstX,midY-64);
+  ctx.font=F(13);ctx.fillStyle=PENCIL;ctx.textAlign='center';
+  ctx.fillText('green = grounded in your material   ·   red = invented or off-syllabus',w/2,h-12);
+  var target=grounded?94:55;acc+=(target-acc)*0.05;
+  r2.innerHTML='On-syllabus: <b>'+Math.round(acc)+'%</b>'+(grounded?' — and it says "not in the material" for the rest':' — the rest is confident, fluent, and pitched too high');
+ });
+ set(0);
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+/* ---------- 3 · outcome chain ---------- */
+(function(){
+ var cv=document.getElementById('c3');if(!cv)return;var G=fit(cv);
+ var steps=['Outcomes','Misconceptions','Lesson skeleton','Differentiation','Assessment'];
+ var stage=0,timer=0,playing=false;
+ var r3=document.getElementById('r3');
+ document.getElementById('b3').onclick=function(){stage=0;timer=0;playing=true;};
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
+  if(playing){timer++;if(timer>34){timer=0;stage++;if(stage>steps.length){stage=steps.length;playing=false;}}}
+  var n=steps.length,bw=Math.min(150,(w-60)/n-12),gap=(w-60-bw*n)/(n-1||1),y=h*0.40;
+  for(var i=0;i<n;i++){
+   var x=30+i*(bw+gap),on=i<stage;
+   ctx.fillStyle=on?'rgba(47,95,168,.13)':'rgba(43,42,38,.04)';
+   ctx.fillRect(x,y-34,bw,68);
+   sketchRect(ctx,x,y-34,bw,68,on?BLUE:PENCIL,on?2.6:1.6);
+   ctx.font=F(15);ctx.textAlign='center';ctx.fillStyle=on?INK:PENCIL;
+   var words=steps[i].split(' ');
+   for(var wI=0;wI<words.length;wI++){ctx.fillText(words[wI],x+bw/2,y-2+wI*18-(words.length-1)*9);}
+   ctx.font=F(13);ctx.fillStyle=on?BLUE:'rgba(107,103,92,.6)';
+   ctx.fillText('prompt '+(i+1),x+bw/2,y+52);
+   if(i<n-1){var ax=x+bw+2,axe=x+bw+gap-2;
+    hLine(ctx,ax,y,axe,y,i<stage-1?BLUE:'rgba(107,103,92,.45)',i<stage-1?2.4:1.4);
+    if(i<stage-1){ctx.fillStyle=BLUE;ctx.beginPath();ctx.moveTo(axe,y);ctx.lineTo(axe-7,y-5);ctx.lineTo(axe-7,y+5);ctx.closePath();ctx.fill();}}
+  }
+  ctx.font=F(14);ctx.textAlign='center';ctx.fillStyle=PENCIL;
+  ctx.fillText('each answer becomes the input to the next prompt — that is what stops the drift',w/2,h-14);
+  r3.innerHTML='Step <b>'+stage+'</b> of 5'+(stage===5?' — now you have a lesson, not an essay about a lesson':'');
+ });
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+/* ---------- 4 · differentiation slider ---------- */
+(function(){
+ var cv=document.getElementById('c4');if(!cv)return;var G=fit(cv);
+ var TIERS=[
+  {t:'Tier 1 — heavy support',
+   q:'A drawing pin has a sharp point. Press it into a board.',
+   s:'Scaffold: The pointed end has a <i>very small</i> area. Pressure = Force &divide; Area. If the area gets smaller and the force stays the same, does the pressure get bigger or smaller? Circle one.'},
+  {t:'Tier 2 — some support',
+   q:'Why does a drawing pin go into the board point-first and not head-first?',
+   s:'Scaffold: Think about the <i>area</i> of each end. Use the words force, area and pressure in your answer.'},
+  {t:'Tier 3 — grade level',
+   q:'Explain why a drawing pin pierces a board when pressed point-first, but not head-first.',
+   s:'Use the relationship between force, area and pressure in your explanation.'},
+  {t:'Tier 4 — stretch',
+   q:'A drawing pin is pressed with 10 N. The point has an area of 0.1 mm&sup2;, the head 100 mm&sup2;. Calculate the pressure at each end.',
+   s:'Then explain, in one sentence, why the pin moves into the board rather than into your thumb.'},
+  {t:'Tier 5 — extension',
+   q:'A camel walks on sand without sinking; a woman in stiletto heels sinks. Both apply roughly the same weight.',
+   s:'Design a fair test you could run in the classroom to demonstrate the principle involved, and state one thing your test would <i>not</i> prove.'}
+ ];
+ var tier=3,shown=3;
+ var sl=document.getElementById('s4r'),r4=document.getElementById('r4'),q4=document.getElementById('q4');
+ function paintCard(){var d=TIERS[tier-1];
+  q4.innerHTML='<div class="qt">'+d.q+'</div><div class="scaf">'+d.s+'</div>';
+  r4.innerHTML='Tier <b>'+tier+'</b> — '+d.t.split('— ')[1];}
+ sl.addEventListener('input',function(){tier=parseInt(sl.value,10)||3;paintCard();});
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
+  shown+=(tier-shown)*0.16;
+  var SC=[0.80,0.65,0.50,0.32,0.15];
+  var n=5,bw=Math.min(120,(w-70)/n-14),gap=(w-70-bw*n)/(n-1||1);
+  for(var i=0;i<n;i++){
+   var x=35+i*(bw+gap),lvl=i+1;
+   var scaf=SC[i];
+   var bh=118;var by=h*0.24;
+   var act=Math.abs(shown-lvl)<0.5;
+   var al=act?0.62:0.30;
+   // scaffolding (blue, top) and thinking demanded (purple, bottom) — stacked, never overlapping
+   ctx.fillStyle='rgba(47,95,168,'+al+')';ctx.fillRect(x,by,bw,bh*scaf);
+   ctx.fillStyle='rgba(122,90,168,'+al+')';ctx.fillRect(x,by+bh*scaf+2,bw,bh*(1-scaf)-2);
+   sketchRect(ctx,x,by,bw,bh,act?RED:PENCIL,act?2.9:1.6);
+   if(act){
+    ctx.font=F(13);ctx.textAlign='center';ctx.fillStyle='#fff';
+    ctx.fillText(Math.round(scaf*100)+'% help',x+bw/2,by+bh*scaf/2+5);
+   }
+   ctx.font=F(15);ctx.textAlign='center';ctx.fillStyle=act?RED:PENCIL;
+   ctx.fillText('T'+lvl,x+bw/2,by+bh+26);
+  }
+  ctx.font=F(14);ctx.textAlign='left';
+  ctx.fillStyle=BLUE;ctx.fillText('■ scaffolding given',35,h-16);
+  ctx.fillStyle=PURPLE;ctx.fillText('■ thinking demanded',35+160,h-16);
+  ctx.fillStyle=PENCIL;ctx.textAlign='right';
+  ctx.fillText('same outcome, five doors',w-16,h-16);
+ });
+ paintCard();
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+/* ---------- 5 · distractors ---------- */
+(function(){
+ var cv=document.getElementById('c5');if(!cv)return;var G=fit(cv);
+ var OPTS=[
+  {l:'A',txt:'Her heels have a much smaller area',good:null,why:'This is the correct answer.',diag:'correct'},
+  {l:'B',txt:'She pushes down with more force than an elephant',good:true,why:'DIAGNOSTIC — catches the child who thinks pressure is just force, ignoring area. The single most common Class 8 error on this topic.',diag:'good'},
+  {l:'C',txt:'Soft ground has less pressure inside it',good:true,why:'DIAGNOSTIC — catches the child who thinks pressure is a property of the ground rather than of the contact.',diag:'good'},
+  {l:'D',txt:'Elephants are better adapted to walking',good:false,why:'FILLER — no child who has misunderstood the physics will pick this. It tests nothing, so it makes the question easier without making it more useful.',diag:'bad'}
+ ];
+ var sel=-1,pulse=0;
+ var r5=document.getElementById('r5');
+ var btns=document.querySelectorAll('[data-opt]');
+ for(var i=0;i<btns.length;i++){(function(b){
+   b.onclick=function(){sel=parseInt(b.getAttribute('data-opt'),10);pulse=0;
+     for(var j=0;j<btns.length;j++)btns[j].classList.remove('on');
+     b.classList.add('on');
+     var o=OPTS[sel];r5.innerHTML='<b>'+o.l+'</b> — '+o.why;};
+ })(btns[i]);}
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);pulse+=0.05;
+  var bw=w-80,bh=52;
+  for(var i=0;i<4;i++){
+   var y=26+i*66,x=40,o=OPTS[i],act=(sel===i);
+   var col=PENCIL;
+   if(act){col=o.diag==='correct'?BLUE:(o.diag==='good'?GREEN:RED);}
+   ctx.fillStyle=act?(o.diag==='correct'?'rgba(47,95,168,.10)':(o.diag==='good'?'rgba(63,125,78,.12)':'rgba(193,67,46,.10)')):'rgba(43,42,38,.03)';
+   ctx.fillRect(x,y,bw,bh);
+   sketchRect(ctx,x,y,bw,bh,col,act?2.9:1.6);
+   ctx.font=F(17);ctx.textAlign='left';ctx.fillStyle=INK;
+   ctx.fillText(o.l+'.  '+o.txt,x+18,y+33);
+   if(act){
+    var lbl=o.diag==='correct'?'correct answer':(o.diag==='good'?'diagnostic ✓':'filler ✗');
+    ctx.font=F(14);ctx.textAlign='right';ctx.fillStyle=col;
+    ctx.globalAlpha=0.65+0.35*Math.sin(pulse);
+    ctx.fillText(lbl,x+bw-14,y+33);ctx.globalAlpha=1;
+   }
+  }
+ });
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+/* ---------- 6 · light as an electromagnetic wave ---------- */
+(function(){
+ var cv=document.getElementById('c6');if(!cv)return;var G=fit(cv);
+ var t=0,showB=1,rope=0,sv=52;
+ var sl=document.getElementById('s6r'),r6=document.getElementById('r6');
+ var bB=document.getElementById('b6b'),bR=document.getElementById('b6r');
+ function lam(){return Math.pow(10,3-(sv/100)*15);}   // slider left = long (radio), right = short (gamma)
+ function band(L){
+  if(L>1e-1)return['Radio',PURPLE];
+  if(L>1e-3)return['Microwave',BLUE];
+  if(L>7e-7)return['Infrared',RED];
+  if(L>4e-7)return['Visible light',GREEN];
+  if(L>1e-8)return['Ultraviolet',PURPLE];
+  if(L>1e-11)return['X-ray',BLUE];
+  return['Gamma ray',RED];}
+ function fmt(L){
+  if(L>=1e3)return (L/1e3).toFixed(1)+' km';
+  if(L>=1)return L.toFixed(2)+' m';
+  if(L>=1e-2)return (L*100).toFixed(2)+' cm';
+  if(L>=1e-3)return (L*1e3).toFixed(2)+' mm';
+  if(L>=1e-6)return (L*1e6).toFixed(2)+' µm';
+  if(L>=1e-9)return (L*1e9).toFixed(1)+' nm';
+  return (L*1e12).toFixed(1)+' pm';}
+ function visHue(L){var nm=L*1e9;return (700-clamp(nm,400,700))/300*275;}
+ sl.addEventListener('input',function(){sv=parseInt(sl.value,10);if(isNaN(sv))sv=52;});
+ bB.onclick=function(){showB=showB?0:1;bB.classList.toggle('on',!!showB);
+   bB.textContent='Magnetic field: '+(showB?'on':'off');};
+ bR.onclick=function(){rope=rope?0:1;bR.classList.toggle('on',!!rope);bR.classList.toggle('red',!!rope);
+   bR.textContent=rope?'Back to the field picture':'Show what students picture';};
+ register(cv,function(){
+  var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);t+=1;
+  var x0=64,x1=w-72,midY=h*0.50,A=54;
+  var L=lam(),bd=band(L);
+  var cyc=1.6+(sv/100)*7.2, k=cyc*TAU/(x1-x0), om=0.055;
+  var bxu=0.52,byu=0.30;           // unit vector for "into the page"
+  hLine(ctx,x0,midY,x1,midY,PENCIL,1.4);
+  ctx.font=F(14);ctx.textAlign='right';ctx.fillStyle=PENCIL;
+  ctx.fillText('direction of travel →',x1+6,h-40);
+
+  if(rope){
+   ctx.strokeStyle=RED;ctx.lineWidth=4;ctx.beginPath();
+   for(var xr=x0;xr<=x1;xr+=3){var yr=midY-A*0.7*Math.sin(k*(xr-x0)-om*t);
+    if(xr===x0)ctx.moveTo(xr,yr);else ctx.lineTo(xr,yr);}
+   ctx.stroke();
+   for(var xb=x0;xb<=x1;xb+=34){var yb=midY-A*0.7*Math.sin(k*(xb-x0)-om*t);
+    ctx.fillStyle=INK;ctx.beginPath();ctx.arc(xb,yb,5,0,TAU);ctx.fill();}
+   ctx.font=F(16);ctx.textAlign='center';ctx.fillStyle=RED;
+   ctx.fillText('what students picture: a rope made of something',w/2,h-42);
+   ctx.font=F(14);ctx.fillStyle=PENCIL;
+   ctx.fillText('so they cannot explain how sunlight crosses empty space',w/2,h-20);
+   r6.innerHTML='The rope picture — <b>wrong, and the one the textbook accidentally teaches</b>';
+   return;
+  }
+
+  // magnetic field first, so the electric field reads on top
+  if(showB){
+   ctx.strokeStyle='rgba(47,95,168,.42)';ctx.lineWidth=1.4;
+   for(var xm=x0;xm<=x1;xm+=11){
+    var Bm=A*0.78*Math.sin(k*(xm-x0)-om*t);
+    ctx.beginPath();ctx.moveTo(xm,midY);ctx.lineTo(xm+Bm*bxu,midY+Bm*byu);ctx.stroke();}
+   ctx.strokeStyle=BLUE;ctx.lineWidth=2.4;ctx.beginPath();
+   for(var xn=x0;xn<=x1;xn+=3){var Bn=A*0.78*Math.sin(k*(xn-x0)-om*t);
+    var px=xn+Bn*bxu,py=midY+Bn*byu;
+    if(xn===x0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}
+   ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(193,67,46,.42)';ctx.lineWidth=1.4;
+  for(var xe=x0;xe<=x1;xe+=11){
+   var Em=A*Math.sin(k*(xe-x0)-om*t);
+   ctx.beginPath();ctx.moveTo(xe,midY);ctx.lineTo(xe,midY-Em);ctx.stroke();}
+  ctx.strokeStyle=RED;ctx.lineWidth=2.8;ctx.beginPath();
+  for(var xf=x0;xf<=x1;xf+=3){var Ef=A*Math.sin(k*(xf-x0)-om*t);
+   if(xf===x0)ctx.moveTo(xf,midY-Ef);else ctx.lineTo(xf,midY-Ef);}
+  ctx.stroke();
+
+  ctx.font=F(15);ctx.textAlign='left';
+  ctx.fillStyle=RED;ctx.fillText('E  electric field',x0-4,26);
+  if(showB){ctx.fillStyle=BLUE;ctx.fillText('B  magnetic field',x0-4,48);}
+  else{ctx.fillStyle=PENCIL;ctx.fillText('B  off — but E cannot exist without it',x0-4,48);}
+  ctx.textAlign='right';ctx.fillStyle=bd[1];ctx.font=F(17);
+  ctx.fillText(bd[0],x1+6,26);
+  if(bd[0]==='Visible light'){
+   ctx.fillStyle='hsl('+visHue(L)+',72%,48%)';
+   ctx.fillRect(x1-34,36,34,14);ctx.strokeStyle=INK;ctx.lineWidth=1.4;ctx.strokeRect(x1-34,36,34,14);
+  }
+  ctx.font=F(13);ctx.textAlign='center';ctx.fillStyle=PENCIL;
+  ctx.fillText('vertical axis is field strength (V/m) — not a height in space',w/2,h-14);
+  r6.innerHTML='&lambda; = <b>'+fmt(L)+'</b> &nbsp;·&nbsp; '+bd[0]+
+   (bd[0]==='Visible light'?' — the only 300 nm your eye can see':'')+
+   ' &nbsp;·&nbsp; all of it travels at the same speed';
+ });
+ window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+})();
+
+requestAnimationFrame(raf);
+</script>
+</body>
+</html>
