@@ -54,7 +54,7 @@ h2{display:inline;font-size:30px;letter-spacing:-.01em}
 border-radius:14px 12px 15px 11px;padding:20px;margin:22px 0;box-shadow:4px 5px 0 rgba(43,42,38,.14)}
 .sketch::after{content:"";position:absolute;inset:5px;border:1.5px solid rgba(43,42,38,.13);
 border-radius:10px 12px 9px 13px;pointer-events:none}
-canvas{display:block;width:100%;border-radius:8px;background:#fbf8ef;touch-action:none}
+canvas{display:block;width:100%;border-radius:8px;background:#fbf8ef;touch-action:pan-y pinch-zoom}
 .ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0 6px}
 .btn{font-family:var(--hand);font-size:16px;background:var(--paper);border:2.5px solid var(--ink);
 padding:5px 14px;border-radius:11px 9px 12px 8px;cursor:pointer;box-shadow:2px 2px 0 var(--pencil);color:var(--ink)}
@@ -95,7 +95,21 @@ font-family:var(--hand2);font-size:16px;min-height:96px}
 footer{margin-top:60px;padding-top:22px;border-top:2px dashed var(--ink);font-family:var(--hand2);
 font-size:14.5px;color:var(--pencil)}
 footer a{color:var(--ink2)}
-@media(max-width:640px){h1{font-size:33px}h2{font-size:24px}body{font-size:17px}}
+@media(max-width:700px){
+  nav{position:static;background:var(--paper)}
+  nav .navin{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:5px;gap:5px}
+  nav a{white-space:nowrap;font-size:13px;border-color:var(--line)}
+  section{scroll-margin-top:10px;margin:34px 0 0}
+  .sketch{padding:12px}
+  .ctrls{gap:7px}
+  input[type=range]{width:min(230px,72vw)}
+  .btn{font-size:14px;padding:5px 11px}
+  .grid2{grid-template-columns:1fr;gap:12px}
+  .note,.note:nth-child(even){transform:none}
+  .verd td{padding:9px 6px}
+  .wrap{padding:0 14px 90px}
+}
+@media(max-width:640px){h1{font-size:31px}h2{font-size:23px}body{font-size:17px}}
 </style>
 </head>
 <body>
@@ -304,8 +318,8 @@ footer a{color:var(--ink2)}
 
 <script>
 const TAU=Math.PI*2, INK='#2b2a26',RED='#c1432e',BLUE='#2f5fa8',GREEN='#3f7d4e',AMBER='#c98a1f',PURPLE='#7a5aa8',PENCIL='#6b675c';
-function fit(cv){const dpr=Math.min(window.devicePixelRatio||1,2);const w=cv.clientWidth||cv.parentElement.clientWidth||900;
- const h=parseInt(cv.getAttribute('height'))||300;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';
+function fit(cv,narrowH){const dpr=Math.min(window.devicePixelRatio||1,2);const w=cv.clientWidth||cv.parentElement.clientWidth||900;
+ let h=parseInt(cv.getAttribute('height'))||300;if(narrowH&&w<560)h=narrowH;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';
  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w,h};}
 function clamp(v,a,b){return v<a?a:v>b?b:v}
 const anims=[];function register(cv,step){const o={cv,step,vis:true};anims.push(o);return o;}
@@ -313,6 +327,10 @@ const io=new IntersectionObserver(function(es){es.forEach(function(e){
   for(var i=0;i<anims.length;i++){if(anims[i].cv===e.target)anims[i].vis=e.isIntersecting;}});},{threshold:.05});
 function raf(){for(var i=0;i<anims.length;i++){if(anims[i].vis)anims[i].step();}requestAnimationFrame(raf);}
 function F(s){return s+'px "Patrick Hand","Gaegu",cursive';}
+function wrap(ctx,txt,max){var ws=txt.split(' '),ls=[],cur='';
+ for(var i=0;i<ws.length;i++){var t=cur?cur+' '+ws[i]:ws[i];
+  if(ctx.measureText(t).width>max&&cur){ls.push(cur);cur=ws[i];}else cur=t;}
+ if(cur)ls.push(cur);return ls;}
 function hLine(ctx,x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.beginPath();
  var seg=6,dx=(x2-x1)/seg,dy=(y2-y1)/seg;ctx.moveTo(x1,y1);
  for(var i=1;i<=seg;i++){ctx.lineTo(x1+dx*i+(Math.random()-.5)*1.1,y1+dy*i+(Math.random()-.5)*1.1);}ctx.stroke();}
@@ -321,7 +339,7 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
 
 /* ---------- 1 · time bars ---------- */
 (function(){
- var cv=document.getElementById('c1');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c1');if(!cv)return;var G=fit(cv,430);
  var tasks=[
   {n:'Find a demo / video',b:25,a:5},
   {n:'Write the worksheet',b:45,a:8},
@@ -344,36 +362,39 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
  document.getElementById('b1b').onclick=function(){setMode('after');};
  register(cv,function(){
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
-  var lx=Math.min(215,w*.42),bx=lx+10,maxw=w-bx-70,scale=maxw/50;
-  ctx.font=F(15);
+  var NAR=w<560;
+  var lx=NAR?0:Math.min(215,w*.42),bx=NAR?10:lx+10,maxw=w-bx-(NAR?52:70),scale=maxw/50;
+  ctx.font=F(NAR?13:15);
   for(var i=0;i<tasks.length;i++){
-   var t=tasks[i],y=28+i*40;
+   var t=tasks[i],y=NAR?(38+i*54):(28+i*40);
    var target=(mode==='before'?t.b:t.a);
    prog[i]+=(target-prog[i])*.12;
    var same=(t.b===t.a);
-   ctx.fillStyle=INK;ctx.textAlign='right';ctx.fillText(t.n,lx,y+6);
+   ctx.fillStyle=INK;
+   if(NAR){ctx.textAlign='left';ctx.fillText(t.n,bx,y-16);}
+   else{ctx.textAlign='right';ctx.fillText(t.n,lx,y+6);}
    ctx.fillStyle='rgba(43,42,38,.07)';ctx.fillRect(bx,y-11,Math.max(t.b,t.a)*scale,22);
    ctx.fillStyle=t.isNew?AMBER:(same?PURPLE:(mode==='before'?RED:GREEN));
    ctx.fillRect(bx,y-11,Math.max(prog[i]*scale,1),22);
    ctx.strokeStyle=INK;ctx.lineWidth=1.6;ctx.strokeRect(bx,y-11,Math.max(prog[i]*scale,1),22);
-   ctx.textAlign='left';ctx.fillStyle=INK;ctx.font=F(14);
-   ctx.fillText(Math.round(prog[i])+'m',bx+Math.max(prog[i]*scale,1)+8,y+5);ctx.font=F(15);
-   ctx.textAlign='right';ctx.font=F(13);
-   if(same){ctx.fillStyle=PURPLE;ctx.fillText('unchanged',w-6,y-12);}
-   else if(t.isNew&&mode==='after'){ctx.fillStyle=AMBER;ctx.fillText('new cost',w-6,y-12);}
-   ctx.font=F(15);
+   ctx.textAlign='left';ctx.fillStyle=INK;ctx.font=F(NAR?12:14);
+   ctx.fillText(Math.round(prog[i])+'m',bx+Math.max(prog[i]*scale,1)+7,y+5);
+   ctx.textAlign='right';ctx.font=F(NAR?11:13);
+   if(same){ctx.fillStyle=PURPLE;ctx.fillText('unchanged',w-4,y-16);}
+   else if(t.isNew&&mode==='after'){ctx.fillStyle=AMBER;ctx.fillText('new cost',w-4,y-16);}
+   ctx.font=F(NAR?13:15);
   }
-  hLine(ctx,bx,h-24,bx+maxw,h-24,PENCIL,1.5);
-  ctx.textAlign='center';ctx.fillStyle=PENCIL;ctx.font=F(13);
-  ctx.fillText('minutes',bx+maxw/2,h-8);
+  hLine(ctx,bx,h-20,bx+maxw,h-20,PENCIL,1.5);
+  ctx.textAlign='center';ctx.fillStyle=PENCIL;ctx.font=F(NAR?11:13);
+  ctx.fillText('minutes',bx+maxw/2,h-6);
  });
  setMode('before');
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,430);});io.observe(cv);
 })();
 
 /* ---------- 2 · grounding ---------- */
 (function(){
- var cv=document.getElementById('c2');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c2');if(!cv)return;var G=fit(cv,268);
  var grounded=0,t=0,parts=[],landed=[],acc=0;
  var r2=document.getElementById('r2');
  function set(g){grounded=g;
@@ -387,56 +408,66 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
  document.getElementById('b2b').onclick=function(){set(1);};
  register(cv,function(){
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);t+=1;
-  var srcX=w*0.20, dstX=w*0.80, midY=h*0.52;
+  var NAR=w<560, FS=NAR?12:15;
+  var srcX=w*(NAR?0.17:0.20), dstX=w*(NAR?0.83:0.80), midY=h*0.52;
+  var mbx=w*(NAR?0.39:0.44), mbw=w*(NAR?0.22:0.12);
+  var dw=NAR?76:112, dh=NAR?86:104, cols=NAR?4:6, cs=NAR?16:17;
   // source
-  ctx.font=F(15);ctx.textAlign='center';
+  ctx.font=F(FS);ctx.textAlign='center';
   if(grounded===0){
    ctx.strokeStyle=RED;ctx.lineWidth=2;
-   for(var k=0;k<9;k++){var a=k/9*TAU+t*0.004,rr=58+((k*13)%26);
-    ctx.beginPath();ctx.arc(srcX+Math.cos(a)*rr,midY+Math.sin(a)*rr*.62,7,0,TAU);ctx.stroke();}
-   ctx.fillStyle=RED;ctx.fillText('everything it ever read',srcX,midY+108);
+   var R0=NAR?30:58, RV=NAR?13:26;
+   for(var k=0;k<9;k++){var a=k/9*TAU+t*0.004,rr=R0+((k*13)%RV);
+    ctx.beginPath();ctx.arc(srcX+Math.cos(a)*rr,midY+Math.sin(a)*rr*.62,NAR?5:7,0,TAU);ctx.stroke();}
+   ctx.fillStyle=RED;
+   var t1=NAR?['everything it','ever read']:['everything it ever read'];
+   for(var q=0;q<t1.length;q++)ctx.fillText(t1[q],srcX,midY+(NAR?62:108)+q*16);
   }else{
-   sketchRect(ctx,srcX-52,midY-56,104,112,GREEN,2.4);
+   var bw2=NAR?62:104, bh2=NAR?76:112;
+   sketchRect(ctx,srcX-bw2/2,midY-bh2/2,bw2,bh2,GREEN,2.4);
    ctx.strokeStyle=GREEN;ctx.lineWidth=1.4;
-   for(var l=0;l<7;l++){hLine(ctx,srcX-36,midY-36+l*15,srcX+36,midY-36+l*15,'rgba(63,125,78,.55)',1.2);}
-   ctx.fillStyle=GREEN;ctx.fillText('your chapter + syllabus',srcX,midY+108);
+   for(var l=0;l<(NAR?5:7);l++){hLine(ctx,srcX-bw2/2+8,midY-bh2/2+12+l*(NAR?12:15),srcX+bw2/2-8,midY-bh2/2+12+l*(NAR?12:15),'rgba(63,125,78,.55)',1.2);}
+   ctx.fillStyle=GREEN;
+   var t2=NAR?['your chapter','+ syllabus']:['your chapter + syllabus'];
+   for(var q2=0;q2<t2.length;q2++)ctx.fillText(t2[q2],srcX,midY+(NAR?62:108)+q2*16);
   }
   // particles in flight (drawn under the boxes)
   if(t%7===0)parts.push({p:0,ok:grounded===1?(Math.random()<0.94):(Math.random()<0.55)});
   for(var i=parts.length-1;i>=0;i--){
    var pt=parts[i];pt.p+=0.022;
    if(pt.p>=1){landed.push(pt.ok);if(landed.length>44)landed.shift();parts.splice(i,1);continue;}
-   var px=srcX+(dstX-56-srcX)*pt.p;
+   var px=srcX+(dstX-dw/2-srcX)*pt.p;
    var py=midY+Math.sin(pt.p*3.1+i)*14*(1-pt.p);
    ctx.fillStyle=pt.ok?GREEN:RED;ctx.beginPath();ctx.arc(px,py,5,0,TAU);ctx.fill();
   }
   // model box, drawn over the flight path so the label stays readable
-  ctx.fillStyle='#fbf8ef';ctx.fillRect(w*0.44,midY-40,w*0.12,80);
-  sketchRect(ctx,w*0.44,midY-40,w*0.12,80,INK,2.4);
-  ctx.fillStyle=INK;ctx.font=F(15);ctx.textAlign='center';ctx.fillText('model',w*0.50,midY+5);
+  ctx.fillStyle='#fbf8ef';ctx.fillRect(mbx,midY-40,mbw,80);
+  sketchRect(ctx,mbx,midY-40,mbw,80,INK,2.4);
+  ctx.fillStyle=INK;ctx.font=F(FS);ctx.textAlign='center';ctx.fillText('model',mbx+mbw/2,midY+5);
   // destination — fills with whatever actually arrived
-  ctx.fillStyle='#fbf8ef';ctx.fillRect(dstX-56,midY-52,112,104);
-  sketchRect(ctx,dstX-56,midY-52,112,104,INK,2.4);
+  ctx.fillStyle='#fbf8ef';ctx.fillRect(dstX-dw/2,midY-dh/2,dw,dh);
+  sketchRect(ctx,dstX-dw/2,midY-dh/2,dw,dh,INK,2.4);
   for(var d=0;d<landed.length;d++){
-   var col=d%6,row=Math.floor(d/6);
+   var col=d%cols,row=Math.floor(d/cols);
+   if(midY-dh/2+12+row*(NAR?13:14)>midY+dh/2-6)break;
    ctx.fillStyle=landed[d]?GREEN:RED;
-   ctx.beginPath();ctx.arc(dstX-44+col*17,midY-40+row*14,4.6,0,TAU);ctx.fill();
+   ctx.beginPath();ctx.arc(dstX-dw/2+12+col*cs,midY-dh/2+12+row*(NAR?13:14),NAR?4:4.6,0,TAU);ctx.fill();
   }
-  ctx.fillStyle=INK;ctx.font=F(15);ctx.textAlign='center';ctx.fillText('your lesson',dstX,midY+96);
-  ctx.font=F(14);ctx.fillStyle=grounded?GREEN:RED;
-  ctx.fillText(grounded?'on-syllabus':'depth drift',dstX,midY-64);
-  ctx.font=F(13);ctx.fillStyle=PENCIL;ctx.textAlign='center';
-  ctx.fillText('green = grounded in your material   ·   red = invented or off-syllabus',w/2,h-12);
+  ctx.fillStyle=INK;ctx.font=F(FS);ctx.textAlign='center';ctx.fillText('your lesson',dstX,midY+(NAR?62:96));
+  ctx.font=F(NAR?12:14);ctx.fillStyle=grounded?GREEN:RED;
+  ctx.fillText(grounded?'on-syllabus':'depth drift',dstX,midY-(NAR?54:64));
+  ctx.font=F(NAR?11:13);ctx.fillStyle=PENCIL;ctx.textAlign='center';
+  ctx.fillText(NAR?'green = grounded  ·  red = invented':'green = grounded in your material   ·   red = invented or off-syllabus',w/2,h-12);
   var target=grounded?94:55;acc+=(target-acc)*0.05;
   r2.innerHTML='On-syllabus: <b>'+Math.round(acc)+'%</b>'+(grounded?' — and it says "not in the material" for the rest':' — the rest is confident, fluent, and pitched too high');
  });
  set(0);
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,268);});io.observe(cv);
 })();
 
 /* ---------- 3 · outcome chain ---------- */
 (function(){
- var cv=document.getElementById('c3');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c3');if(!cv)return;var G=fit(cv,262);
  var steps=['Outcomes','Misconceptions','Lesson skeleton','Differentiation','Assessment'];
  var stage=0,timer=0,playing=false;
  var r3=document.getElementById('r3');
@@ -444,6 +475,24 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
  register(cv,function(){
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
   if(playing){timer++;if(timer>34){timer=0;stage++;if(stage>steps.length){stage=steps.length;playing=false;}}}
+  var NAR=w<560;
+  if(NAR){
+   for(var j=0;j<steps.length;j++){
+    var yy=22+j*46, onj=j<stage;
+    ctx.fillStyle=onj?'rgba(47,95,168,.13)':'rgba(43,42,38,.04)';
+    ctx.fillRect(20,yy,w-40,36);
+    sketchRect(ctx,20,yy,w-40,36,onj?BLUE:PENCIL,onj?2.4:1.5);
+    ctx.font=F(14);ctx.textAlign='left';ctx.fillStyle=onj?INK:PENCIL;
+    ctx.fillText(steps[j],32,yy+23);
+    ctx.font=F(11);ctx.textAlign='right';ctx.fillStyle=onj?BLUE:'rgba(107,103,92,.6)';
+    ctx.fillText('prompt '+(j+1),w-30,yy+23);
+    if(j<steps.length-1&&j<stage-1){hLine(ctx,w/2,yy+36,w/2,yy+46,BLUE,2);}
+   }
+   ctx.font=F(11);ctx.textAlign='center';ctx.fillStyle=PENCIL;
+   ctx.fillText('each answer feeds the next prompt',w/2,h-8);
+   r3.innerHTML='Step <b>'+stage+'</b> of 5'+(stage===5?' — a lesson, not an essay about one':'');
+   return;
+  }
   var n=steps.length,bw=Math.min(150,(w-60)/n-12),gap=(w-60-bw*n)/(n-1||1),y=h*0.40;
   for(var i=0;i<n;i++){
    var x=30+i*(bw+gap),on=i<stage;
@@ -463,12 +512,12 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
   ctx.fillText('each answer becomes the input to the next prompt — that is what stops the drift',w/2,h-14);
   r3.innerHTML='Step <b>'+stage+'</b> of 5'+(stage===5?' — now you have a lesson, not an essay about a lesson':'');
  });
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,262);});io.observe(cv);
 })();
 
 /* ---------- 4 · differentiation slider ---------- */
 (function(){
- var cv=document.getElementById('c4');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c4');if(!cv)return;var G=fit(cv,200);
  var TIERS=[
   {t:'Tier 1 — heavy support',
    q:'A drawing pin has a sharp point. Press it into a board.',
@@ -496,37 +545,45 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);
   shown+=(tier-shown)*0.16;
   var SC=[0.80,0.65,0.50,0.32,0.15];
-  var n=5,bw=Math.min(120,(w-70)/n-14),gap=(w-70-bw*n)/(n-1||1);
+  var NAR=w<560;
+  var pad=NAR?14:35, gp=NAR?7:14;
+  var n=5,bw=Math.min(120,(w-pad*2)/n-gp),gap=(w-pad*2-bw*n)/(n-1||1);
   for(var i=0;i<n;i++){
-   var x=35+i*(bw+gap),lvl=i+1;
+   var x=pad+i*(bw+gap),lvl=i+1;
    var scaf=SC[i];
-   var bh=118;var by=h*0.24;
+   var bh=NAR?92:118;var by=NAR?18:h*0.24;
    var act=Math.abs(shown-lvl)<0.5;
    var al=act?0.62:0.30;
    // scaffolding (blue, top) and thinking demanded (purple, bottom) — stacked, never overlapping
    ctx.fillStyle='rgba(47,95,168,'+al+')';ctx.fillRect(x,by,bw,bh*scaf);
    ctx.fillStyle='rgba(122,90,168,'+al+')';ctx.fillRect(x,by+bh*scaf+2,bw,bh*(1-scaf)-2);
    sketchRect(ctx,x,by,bw,bh,act?RED:PENCIL,act?2.9:1.6);
-   if(act){
+   if(act&&!NAR){
     ctx.font=F(13);ctx.textAlign='center';ctx.fillStyle='#fff';
     ctx.fillText(Math.round(scaf*100)+'% help',x+bw/2,by+bh*scaf/2+5);
    }
-   ctx.font=F(15);ctx.textAlign='center';ctx.fillStyle=act?RED:PENCIL;
-   ctx.fillText('T'+lvl,x+bw/2,by+bh+26);
+   ctx.font=F(NAR?13:15);ctx.textAlign='center';ctx.fillStyle=act?RED:PENCIL;
+   ctx.fillText('T'+lvl,x+bw/2,by+bh+(NAR?20:26));
   }
-  ctx.font=F(14);ctx.textAlign='left';
-  ctx.fillStyle=BLUE;ctx.fillText('■ scaffolding given',35,h-16);
-  ctx.fillStyle=PURPLE;ctx.fillText('■ thinking demanded',35+160,h-16);
-  ctx.fillStyle=PENCIL;ctx.textAlign='right';
-  ctx.fillText('same outcome, five doors',w-16,h-16);
+  if(NAR){
+   ctx.font=F(12);ctx.textAlign='center';
+   ctx.fillStyle=BLUE;ctx.fillText('■ scaffolding given',w/2,h-26);
+   ctx.fillStyle=PURPLE;ctx.fillText('■ thinking demanded',w/2,h-8);
+  }else{
+   ctx.font=F(14);ctx.textAlign='left';
+   ctx.fillStyle=BLUE;ctx.fillText('■ scaffolding given',35,h-16);
+   ctx.fillStyle=PURPLE;ctx.fillText('■ thinking demanded',35+160,h-16);
+   ctx.fillStyle=PENCIL;ctx.textAlign='right';
+   ctx.fillText('same outcome, five doors',w-16,h-16);
+  }
  });
  paintCard();
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,200);});io.observe(cv);
 })();
 
 /* ---------- 5 · distractors ---------- */
 (function(){
- var cv=document.getElementById('c5');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c5');if(!cv)return;var G=fit(cv,306);
  var OPTS=[
   {l:'A',txt:'Her heels have a much smaller area',good:null,why:'This is the correct answer.',diag:'correct'},
   {l:'B',txt:'She pushes down with more force than an elephant',good:true,why:'DIAGNOSTIC — catches the child who thinks pressure is just force, ignoring area. The single most common Class 8 error on this topic.',diag:'good'},
@@ -544,30 +601,36 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
  })(btns[i]);}
  register(cv,function(){
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);pulse+=0.05;
-  var bw=w-80,bh=52;
+  var NAR=w<560;
+  var pad5=NAR?12:40, bw=w-pad5*2, bh=NAR?62:52, gapY=NAR?72:66;
+  ctx.font=F(NAR?14:17);
   for(var i=0;i<4;i++){
-   var y=26+i*66,x=40,o=OPTS[i],act=(sel===i);
+   var y=(NAR?14:26)+i*gapY,x=pad5,o=OPTS[i],act=(sel===i);
    var col=PENCIL;
    if(act){col=o.diag==='correct'?BLUE:(o.diag==='good'?GREEN:RED);}
    ctx.fillStyle=act?(o.diag==='correct'?'rgba(47,95,168,.10)':(o.diag==='good'?'rgba(63,125,78,.12)':'rgba(193,67,46,.10)')):'rgba(43,42,38,.03)';
    ctx.fillRect(x,y,bw,bh);
    sketchRect(ctx,x,y,bw,bh,col,act?2.9:1.6);
-   ctx.font=F(17);ctx.textAlign='left';ctx.fillStyle=INK;
-   ctx.fillText(o.l+'.  '+o.txt,x+18,y+33);
+   ctx.font=F(NAR?14:17);ctx.textAlign='left';ctx.fillStyle=INK;
+   var avail=bw-(NAR?24:36)-(act&&!NAR?110:0);
+   var lines=wrap(ctx,o.l+'.  '+o.txt,avail);
+   if(lines.length>2)lines=[lines[0],lines.slice(1).join(' ')];
+   for(var li=0;li<lines.length;li++){
+    ctx.fillText(lines[li],x+(NAR?11:18),y+(lines.length===1?bh/2+6:(NAR?24:22)+li*(NAR?19:20)));}
    if(act){
     var lbl=o.diag==='correct'?'correct answer':(o.diag==='good'?'diagnostic ✓':'filler ✗');
-    ctx.font=F(14);ctx.textAlign='right';ctx.fillStyle=col;
+    ctx.font=F(NAR?12:14);ctx.textAlign='right';ctx.fillStyle=col;
     ctx.globalAlpha=0.65+0.35*Math.sin(pulse);
-    ctx.fillText(lbl,x+bw-14,y+33);ctx.globalAlpha=1;
+    ctx.fillText(lbl,x+bw-(NAR?10:14),y+bh-(NAR?8:19));ctx.globalAlpha=1;
    }
   }
  });
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,306);});io.observe(cv);
 })();
 
 /* ---------- 6 · light as an electromagnetic wave ---------- */
 (function(){
- var cv=document.getElementById('c6');if(!cv)return;var G=fit(cv);
+ var cv=document.getElementById('c6');if(!cv)return;var G=fit(cv,300);
  var t=0,showB=1,rope=0,sv=52;
  var sl=document.getElementById('s6r'),r6=document.getElementById('r6');
  var bB=document.getElementById('b6b'),bR=document.getElementById('b6r');
@@ -596,13 +659,14 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
    bR.textContent=rope?'Back to the field picture':'Show what students picture';};
  register(cv,function(){
   var ctx=G.ctx,w=G.w,h=G.h;ctx.clearRect(0,0,w,h);t+=1;
-  var x0=64,x1=w-72,midY=h*0.50,A=54;
+  var NAR=w<560;
+  var x0=NAR?16:64,x1=w-(NAR?16:72),midY=h*(NAR?0.54:0.50),A=NAR?40:54;
   var L=lam(),bd=band(L);
-  var cyc=1.6+(sv/100)*7.2, k=cyc*TAU/(x1-x0), om=0.055;
+  var cyc=(NAR?1.2:1.6)+(sv/100)*(NAR?4.4:7.2), k=cyc*TAU/(x1-x0), om=0.055;
   var bxu=0.52,byu=0.30;           // unit vector for "into the page"
   hLine(ctx,x0,midY,x1,midY,PENCIL,1.4);
-  ctx.font=F(14);ctx.textAlign='right';ctx.fillStyle=PENCIL;
-  ctx.fillText('direction of travel →',x1+6,h-40);
+  ctx.font=F(NAR?11:14);ctx.textAlign='right';ctx.fillStyle=PENCIL;
+  ctx.fillText('direction of travel →',x1,h-(NAR?26:40));
 
   if(rope){
    ctx.strokeStyle=RED;ctx.lineWidth=4;ctx.beginPath();
@@ -611,10 +675,12 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
    ctx.stroke();
    for(var xb=x0;xb<=x1;xb+=34){var yb=midY-A*0.7*Math.sin(k*(xb-x0)-om*t);
     ctx.fillStyle=INK;ctx.beginPath();ctx.arc(xb,yb,5,0,TAU);ctx.fill();}
-   ctx.font=F(16);ctx.textAlign='center';ctx.fillStyle=RED;
-   ctx.fillText('what students picture: a rope made of something',w/2,h-42);
-   ctx.font=F(14);ctx.fillStyle=PENCIL;
-   ctx.fillText('so they cannot explain how sunlight crosses empty space',w/2,h-20);
+   ctx.textAlign='center';ctx.fillStyle=RED;ctx.font=F(NAR?13:16);
+   var rl=wrap(ctx,'what students picture: a rope made of something',w-24);
+   for(var ri=0;ri<rl.length;ri++)ctx.fillText(rl[ri],w/2,h-(NAR?46:42)+ri*17);
+   ctx.font=F(NAR?11:14);ctx.fillStyle=PENCIL;
+   var rl2=wrap(ctx,NAR?'so how does sunlight cross empty space?':'so they cannot explain how sunlight crosses empty space',w-24);
+   for(var ri2=0;ri2<rl2.length;ri2++)ctx.fillText(rl2[ri2],w/2,h-(NAR?16:20)+ri2*15);
    r6.innerHTML='The rope picture — <b>wrong, and the one the textbook accidentally teaches</b>';
    return;
   }
@@ -640,23 +706,23 @@ function sketchRect(ctx,x,y,w,h,col,lw){ctx.strokeStyle=col;ctx.lineWidth=lw||2;
    if(xf===x0)ctx.moveTo(xf,midY-Ef);else ctx.lineTo(xf,midY-Ef);}
   ctx.stroke();
 
-  ctx.font=F(15);ctx.textAlign='left';
-  ctx.fillStyle=RED;ctx.fillText('E  electric field',x0-4,26);
-  if(showB){ctx.fillStyle=BLUE;ctx.fillText('B  magnetic field',x0-4,48);}
-  else{ctx.fillStyle=PENCIL;ctx.fillText('B  off — but E cannot exist without it',x0-4,48);}
-  ctx.textAlign='right';ctx.fillStyle=bd[1];ctx.font=F(17);
-  ctx.fillText(bd[0],x1+6,26);
+  ctx.font=F(NAR?12:15);ctx.textAlign='left';
+  ctx.fillStyle=RED;ctx.fillText('E  electric field',x0,NAR?18:26);
+  if(showB){ctx.fillStyle=BLUE;ctx.fillText('B  magnetic field',x0,NAR?36:48);}
+  else{ctx.fillStyle=PENCIL;ctx.fillText(NAR?'B  off — E needs it':'B  off — but E cannot exist without it',x0,NAR?36:48);}
+  ctx.textAlign='right';ctx.fillStyle=bd[1];ctx.font=F(NAR?14:17);
+  ctx.fillText(bd[0],x1,NAR?18:26);
   if(bd[0]==='Visible light'){
    ctx.fillStyle='hsl('+visHue(L)+',72%,48%)';
-   ctx.fillRect(x1-34,36,34,14);ctx.strokeStyle=INK;ctx.lineWidth=1.4;ctx.strokeRect(x1-34,36,34,14);
+   ctx.fillRect(x1-30,NAR?26:36,30,12);ctx.strokeStyle=INK;ctx.lineWidth=1.4;ctx.strokeRect(x1-30,NAR?26:36,30,12);
   }
-  ctx.font=F(13);ctx.textAlign='center';ctx.fillStyle=PENCIL;
-  ctx.fillText('vertical axis is field strength (V/m) — not a height in space',w/2,h-14);
+  ctx.font=F(NAR?10.5:13);ctx.textAlign='center';ctx.fillStyle=PENCIL;
+  ctx.fillText(NAR?'vertical axis = field strength, not height':'vertical axis is field strength (V/m) — not a height in space',w/2,h-(NAR?8:14));
   r6.innerHTML='&lambda; = <b>'+fmt(L)+'</b> &nbsp;·&nbsp; '+bd[0]+
    (bd[0]==='Visible light'?' — the only 300 nm your eye can see':'')+
-   ' &nbsp;·&nbsp; all of it travels at the same speed';
+   (NAR?'':' &nbsp;·&nbsp; all of it travels at the same speed');
  });
- window.addEventListener('resize',function(){G=fit(cv);});io.observe(cv);
+ window.addEventListener('resize',function(){G=fit(cv,300);});io.observe(cv);
 })();
 
 requestAnimationFrame(raf);
